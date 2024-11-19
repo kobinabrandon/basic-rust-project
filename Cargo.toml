@@ -1,0 +1,9 @@
+[package]
+name = "basic-rust-project"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.93"
+log = "0.4.22"
+reqwest = "0.12.9"
