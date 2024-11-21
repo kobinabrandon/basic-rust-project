@@ -1,38 +1,37 @@
-use std::str::Bytes;
-use reqwest::Response;
+use bytes::Bytes;
 
 
-fn main() -> anyhow::Result<()> {
-   download_raw_data() 
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    download_raw_data().await
 }
 
 
-async fn make_request(url: &str) -> Result<Response, reqwest::Error> {
-     
-    match reqwest::get(url).await {
-        Ok(payload) => {
-            log::info!("Got a bite!");
-            return Ok(payload);
-        },
+async fn make_request(url: &str) -> Result<Bytes, anyhow::Error> {
+      
+    let _response = match reqwest::get(url).await {
+        reqwest::Result::Ok(_response) => {
+            log::info!("Downloading .csv file");
+            let body: bytes::Bytes = _response.bytes().await?;
+            return Ok(body); 
+        }
+        
         Err(fault) => {
-            log::error!("Something went wrong with the download {}", fault);
-            return Err(fault);
+            let error: anyhow::Error = fault.into(); 
+            log::error!("Something went wrong with the download {}", error);
+            return Err(error);
         }
     };
-
 }
 
 
-fn download_raw_data() -> anyhow::Result<()> {
-
+async fn download_raw_data() -> anyhow::Result<()> {
     let url: &str = "https://raw.githubusercontent/selva86/datasets/master/BostonHousing.csv";       
-    log::info!("Downloading .csv file");
-
-    let payload = make_request(url);  
-    let bytes: Bytes = payload.bytes()?;    
+    let file_path: String = "/data/bosting_housing.csv".to_string();
+    let payload = make_request(url).await; 
     
     log::info!("Saving data to disk");
-    std::fs::write("/data", bytes);
+    std::fs::write(file_path, payload.as_ref());
     Ok(())
  }
 
