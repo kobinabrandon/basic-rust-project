@@ -197,6 +197,7 @@ dependencies = [
  "bytes",
  "log",
  "polars",
+ "rand",
  "reqwest",
  "simple_logger",
  "tokio",

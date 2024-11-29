@@ -8,7 +8,7 @@ mod setup {
 }
 
 use polars::frame::DataFrame;
-use crate::feature_pipeline::preprocessing::load_csv;
+use crate::feature_pipeline::preprocessing::{load_csv, train_test_split};
 use crate::feature_pipeline::data_extraction::download_raw_data;
 
 
@@ -19,7 +19,9 @@ async fn main() {
     let _ = download_raw_data(url, &file_path).await;
 
     let data: DataFrame = load_csv(&file_path).expect("Could not load dataframe");
-    println!("{:?}", data.head(Some(5)));
+
+    let (mut training_data, mut test_data) = train_test_split(&data, 0.2)?;
+
 }
 
 
