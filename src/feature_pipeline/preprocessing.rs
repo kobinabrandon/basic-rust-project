@@ -1,4 +1,3 @@
-use std::usize;
 use anyhow::Ok;
 use rand::{prelude::thread_rng, rngs::ThreadRng, seq::SliceRandom};  
 use polars::{self, frame::DataFrame, datatypes::{UInt32Chunked, UInt32Type}, chunked_array::ChunkedArray, prelude::{CsvReadOptions, SerReader}};
@@ -15,7 +14,7 @@ pub fn load_csv(path: &str) -> Result<DataFrame, anyhow::Error> {
 }
 
 
-pub fn train_test_split(data: &DataFrame, test_ratio: f64) -> Result<(DataFrame, DataFrame), anyhow::Error> {
+pub fn train_test_split(data: &DataFrame, test_ratio: f64) -> anyhow::Result<(DataFrame, DataFrame)> {
       
     let num_rows: usize = data.height();
     let split_index = determine_split_index(&test_ratio, num_rows);
@@ -35,6 +34,31 @@ pub fn train_test_split(data: &DataFrame, test_ratio: f64) -> Result<(DataFrame,
 
     Ok((train_data, test_data))
 }
+
+
+pub fn make_features_and_target(data: &DataFrame) -> anyhow::Result<(DataFrame, DataFrame)> {
+
+    let mut feature_names = Vec::new();
+    let mut target_name = Vec::new();
+
+    for name in data.get_column_names() {
+
+        if name != "medv" {
+            feature_names.push(name.to_string());
+        }
+
+        else {
+            target_name.push(name.to_string());
+        }
+
+    }
+
+    let features = data.select(&feature_names)?;
+    let target = data.select(&target_name)?;    
+
+    Ok((features, target))
+}
+
 
 
 fn determine_split_index(test_ratio: &f64, num_rows: usize) -> usize {
